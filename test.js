@@ -1,0 +1,60 @@
+
+var test = require('tap').test
+  , stream = require('readable-stream')
+  , duplexer = require('./')
+
+test('basically works', function(t) {
+  t.plan(2)
+
+  var writable = new stream.Writable()
+    , readable = new stream.Readable()
+    , instance
+
+  writable._write = function(chunk, enc, cb) {
+    t.equal(chunk.toString(), 'writable')
+    cb()
+  }
+
+  readable._read = function(n) {
+    this.push('readable')
+    this.push(null)
+  }
+
+  instance = duplexer(readable, writable)
+
+  instance.on('data', function(chunk) {
+    t.equal(chunk.toString(), 'readable')
+  })
+
+  instance.end('writable')
+})
+
+test('echo mode', function(t) {
+  t.plan(1)
+
+  var writable = new stream.PassThrough()
+    , instance
+
+  instance = duplexer(writable, writable)
+
+  instance.on('data', function(chunk) {
+    t.equal(chunk.toString(), 'a message')
+  })
+
+  instance.end('a message')
+})
+
+test('works with a child process', function(t) {
+  t.plan(1)
+
+  var echo     = require('child_process').spawn('cat', [], {
+                   stdio: ['pipe', 'pipe', process.stderr]
+                 })
+    , instance = duplexer(echo.stdout, echo.stdin)
+
+  instance.on('data', function(chunk) {
+    t.equal(chunk.toString(), 'a message')
+  })
+
+  instance.end('a message')
+})
