@@ -20,7 +20,7 @@ test('basically works', function(t) {
     this.push(null)
   }
 
-  instance = duplexer(readable, writable)
+  instance = duplexer(writable, readable)
 
   instance.on('data', function(chunk) {
     t.equal(chunk.toString(), 'readable')
@@ -50,7 +50,7 @@ test('works with a child process', function(t) {
   var echo     = require('child_process').spawn('cat', [], {
                    stdio: ['pipe', 'pipe', process.stderr]
                  })
-    , instance = duplexer(echo.stdout, echo.stdin)
+    , instance = duplexer(echo.stdin, echo.stdout)
 
   instance.on('data', function(chunk) {
     t.equal(chunk.toString(), 'a message')

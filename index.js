@@ -3,9 +3,9 @@ var stream = require('readable-stream')
   , util   = require('util')
   , assert = require('assert')
 
-function ReaDuplexer(readable, writable, options) {
+function ReaDuplexer(writable, readable, options) {
   if (!(this instanceof ReaDuplexer))
-    return new ReaDuplexer(readable, writable, options)
+    return new ReaDuplexer(writable, readable, options)
 
   assert(readable)
   assert(writable)
