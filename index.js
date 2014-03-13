@@ -48,6 +48,12 @@ function ReaDuplexer(writable, readable, options) {
     that.emit('drain')
   })
 
+  ;[readable, writable, dummyWritable].forEach(function(stream) {
+    stream.on('error', function(err) {
+      that.emit('error', err)
+    })
+  })
+
   this.on('finish', function() {
     writable.end()
   })

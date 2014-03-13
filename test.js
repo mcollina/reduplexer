@@ -73,3 +73,20 @@ test('objectMode', function(t) {
 
   instance.end({ hello: 'world' })
 })
+
+test('pass through error events', function(t) {
+  // two because it must listen for both readable and
+  // writable
+  t.plan(2)
+
+  var writable = new stream.PassThrough()
+    , instance
+
+  instance = duplexer(writable, writable)
+
+  instance.on('error', function(err) {
+    t.ok(err, 'an error is emitted')
+  })
+
+  writable.emit('error', new Error('fake!'))
+})
