@@ -58,3 +58,18 @@ test('works with a child process', function(t) {
 
   instance.end('a message')
 })
+
+test('objectMode', function(t) {
+  t.plan(1)
+
+  var writable = new stream.PassThrough({ objectMode: true })
+    , instance
+
+  instance = duplexer(writable, writable, { objectMode: true })
+
+  instance.on('data', function(chunk) {
+    t.deepEqual(chunk, { hello: 'world' })
+  })
+
+  instance.end({ hello: 'world' })
+})

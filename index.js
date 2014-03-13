@@ -31,7 +31,7 @@ function ReaDuplexer(writable, readable, options) {
   this._writable = writable
 
   var that = this
-    , dummyWritable = new stream.Writable()
+    , dummyWritable = new stream.Writable(options)
 
   dummyWritable._write = function dummyWrite(chunk, enc, cb) {
     if (that.push(chunk, enc))
