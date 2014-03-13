@@ -1,6 +1,6 @@
 {
   "name": "reduplexer",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Another Stream2 duplexer",
   "main": "index.js",
   "scripts": {
