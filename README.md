@@ -11,16 +11,58 @@ It is assumed that the two streams are connected to each other in some way.
 ## Example
 
 ```js
-var cp = require('child_process')
-  , duplex = require('reduplexer')
-  , grep = cp.exec('grep Stream')
+var cp        = require('child_process')
+  , duplexer  = require('reduplexer')
+  , grep      = cp.exec('grep Stream')
 
-duplex(grep.stdin, grep.stdout, { objectMode: true })
+duplexer(grep.stdin, grep.stdout, { objectMode: true })
 ```
 
 ## Installation
 
 `npm install reduplexer --save`
+
+## API
+
+  * <a href="#reduplexer"><code><b>reduplexer()</b></code></a>
+  * <a href="#hookWritable"><code>duplex.<b>hookWritable()</b></code></a>
+  * <a href="#hookReadable"><code>duplex.<b>hookReadable()</b></code></a>
+  * <a href="#hook"><code>duplex.<b>hook()</b></code></a>
+
+-------------------------------------------------------
+<a name="reduplexer"></a>
+### reduplexer(writable, readable, options)
+
+Create a [`Duplex`][3] stream based on `writable` and `readable` using
+the given options.
+`writable` and `readable` can be null, and in that case they can be
+'hooked' later.
+
+-------------------------------------------------------
+<a name="hookWritable"></a>
+
+### duplex.hookWritable(writable)
+
+Hooks a `Writable` stream. It will throw if a `Writable` is already hooked.
+
+-------------------------------------------------------
+<a name="hookReadable"></a>
+### duplex.hookReadable(writable)
+
+Hooks a `Readable` stream. It will throw if a `Readable` stream is already hooked.
+
+-------------------------------------------------------
+<a name="hook"></a>
+### duplex.hook(writable, readable)
+
+Shortcut for:
+
+```js
+duplex.hookWritable(writable)
+duplex.hookReadable(readable)
+```
+
+But it will not throw if any of the two are missing.
 
 ## Tests
 
