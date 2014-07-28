@@ -90,3 +90,63 @@ test('pass through error events', function(t) {
 
   writable.emit('error', new Error('fake!'))
 })
+
+test('late hook', function(t) {
+  t.plan(2)
+
+  var writable = new stream.Writable()
+    , readable = new stream.Readable()
+
+    // nothing here, let's hook them up later
+    , instance = duplexer()
+
+  writable._write = function(chunk, enc, cb) {
+    t.equal(chunk.toString(), 'writable')
+    cb()
+  }
+
+  readable._read = function(n) {
+    this.push('readable')
+    this.push(null)
+  }
+
+  instance.on('data', function(chunk) {
+    t.equal(chunk.toString(), 'readable')
+  })
+
+  instance.end('writable')
+
+  // separate hooks for writable
+  instance.hookWritable(writable)
+  // and readable
+  instance.hookReadable(readable)
+})
+
+test('double hook', function(t) {
+  t.plan(2)
+
+  var writable = new stream.Writable()
+    , readable = new stream.Readable()
+
+    // nothing here, let's hook them up later
+    , instance = duplexer()
+
+  writable._write = function(chunk, enc, cb) {
+    t.equal(chunk.toString(), 'writable')
+    cb()
+  }
+
+  readable._read = function(n) {
+    this.push('readable')
+    this.push(null)
+  }
+
+  instance.on('data', function(chunk) {
+    t.equal(chunk.toString(), 'readable')
+  })
+
+  instance.end('writable')
+
+  // single hook for both!
+  instance.hook(writable, readable)
+})
