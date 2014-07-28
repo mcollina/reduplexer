@@ -30,17 +30,25 @@ function ReaDuplexer(writable, readable, options) {
 
   this.hook(writable, readable)
 
-  this._firstPayloadMethod = 'write'
-
   this.on('finish', function() {
     if (this._writable)
-      return this._writable.end()
-
-    this._firstPayloadMethod = 'end'
+      this._writable.end()
   })
+
+  this._lastReadCallback = null
 }
 
 util.inherits(ReaDuplexer, stream.Duplex)
+
+function callWrite2Args(chunk, enc, cb) {
+  this._writable.write(chunk, enc)
+  cb()
+  return true
+}
+
+function callWrite3Args(chunk, enc, cb) {
+  return this._writable.write(chunk, enc, cb)
+}
 
 ReaDuplexer.prototype.hookWritable = function hookWritable(writable) {
   var that = this
@@ -57,11 +65,21 @@ ReaDuplexer.prototype.hookWritable = function hookWritable(writable) {
     that.emit('error', err)
   })
 
+  if (this._writable.write.length === 3) {
+    this._callWrite = callWrite3Args
+  } else {
+    this._callWrite = callWrite2Args
+  }
+
   if (this._firstPayload) {
-    this._writable[this._firstPayloadMethod](
+    this._callWrite(
       this._firstPayload.chunk
     , this._firstPayload.enc
     , this._firstPayload.cb)
+
+    if (this._writableState.ended) {
+      this._writable.end()
+    }
 
     delete this._firstPayload
   }
@@ -116,9 +134,13 @@ ReaDuplexer.prototype._read = function read(n) {
   this._lastReadCallback = null
 }
 
+ReaDuplexer.prototype._callWrite = function nop() {
+  throw new Error('hook Writable to use')
+}
+
 ReaDuplexer.prototype._write = function write(chunk, enc, cb) {
   if (this._writable)
-    return this._writable.write(chunk, enc, cb)
+    this._callWrite(chunk, enc, cb)
 
   // we are in delayed open
   this._firstPayload = {

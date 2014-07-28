@@ -1,7 +1,8 @@
 
-var test = require('tap').test
-  , stream = require('readable-stream')
-  , duplexer = require('./')
+var test      = require('tap').test
+  , stream    = require('readable-stream')
+  , duplexer  = require('./')
+  , http      = require('http')
 
 test('basically works', function(t) {
   t.plan(2)
@@ -231,4 +232,80 @@ test('double hook', function(t) {
   })
 
   t.end()
+})
+
+test('HTTP support', function(t) {
+  t.plan(1)
+
+  var server   = http.createServer()
+    , instance = duplexer()
+
+  function handle(req, res) {
+    req.pipe(res)
+  }
+
+  server.on('request', handle)
+
+  server.on('listening', function() {
+
+    var request = http.request({
+        host: 'localhost'
+      , port: server.address().port
+      , method: 'POST'
+      , path: '/'
+    })
+
+    request.on('response', function(res) {
+      instance.hookReadable(res)
+    })
+
+    instance.hookWritable(request)
+
+    instance.end('a message')
+  })
+
+  server.listen(0)
+
+  instance.on('data', function(chunk) {
+    t.equal(chunk.toString(), 'a message')
+    server.close()
+  })
+})
+
+test('HTTP support with delayed open', function(t) {
+  t.plan(1)
+
+  var server   = http.createServer()
+    , instance = duplexer()
+
+  function handle(req, res) {
+    req.pipe(res)
+  }
+
+  server.on('request', handle)
+
+  server.on('listening', function() {
+
+    var request = http.request({
+        host: 'localhost'
+      , port: server.address().port
+      , method: 'POST'
+      , path: '/'
+    })
+
+    request.on('response', function(res) {
+      instance.hookReadable(res)
+    })
+
+    instance.hookWritable(request)
+  })
+
+  server.listen(0)
+
+  instance.on('data', function(chunk) {
+    t.equal(chunk.toString(), 'a message')
+    server.close()
+  })
+
+  instance.end('a message')
 })
