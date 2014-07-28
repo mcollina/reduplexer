@@ -45,6 +45,7 @@ util.inherits(ReaDuplexer, stream.Duplex)
 ReaDuplexer.prototype.hookWritable = function hookWritable(writable) {
   var that = this
 
+  assert(!this._readable, 'already hooked to a Writable')
   assert(writable)
   this._writable = writable
 
@@ -72,6 +73,7 @@ ReaDuplexer.prototype.hookReadable = function hookReadable(readable) {
   var that          = this
     , dummyWritable = new stream.Writable(this._options)
 
+  assert(!this._readable, 'already hooked to a Readable')
   assert(readable)
   this._readable  = readable
 

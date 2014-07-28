@@ -122,7 +122,7 @@ test('late hook', function(t) {
   instance.hookReadable(readable)
 })
 
-test('double hook', function(t) {
+test('shortcut hook', function(t) {
   t.plan(2)
 
   var writable = new stream.Writable()
@@ -149,4 +149,54 @@ test('double hook', function(t) {
 
   // single hook for both!
   instance.hook(writable, readable)
+})
+
+test('double hook', function(t) {
+  t.plan(2)
+
+  var writable = new stream.Writable()
+    , readable = new stream.Readable()
+
+    // nothing here, let's hook them up later
+    , instance = duplexer()
+
+  writable._write = function(chunk, enc, cb) {
+    t.equal(chunk.toString(), 'writable')
+    cb()
+  }
+
+  readable._read = function(n) {
+  }
+
+  instance.hook(writable, readable)
+
+  t.test('writable', function(t) {
+    var thrown = false
+
+    try {
+      instance.hookWritable(writable)
+    } catch(err) {
+      thrown = true
+    }
+
+    t.assert(thrown, 'must have thrown')
+
+    t.end()
+  })
+
+  t.test('readable', function(t) {
+    var thrown = false
+
+    try {
+      instance.hookReadable(readable)
+    } catch(err) {
+      thrown = true
+    }
+
+    t.assert(thrown, 'must have thrown')
+
+    t.end()
+  })
+
+  t.end()
 })
