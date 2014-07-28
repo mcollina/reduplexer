@@ -122,6 +122,38 @@ test('late hook', function(t) {
   instance.hookReadable(readable)
 })
 
+
+test('late hook reversed', function(t) {
+  t.plan(2)
+
+  var writable = new stream.Writable()
+    , readable = new stream.Readable()
+
+    // nothing here, let's hook them up later
+    , instance = duplexer()
+
+  writable._write = function(chunk, enc, cb) {
+    t.equal(chunk.toString(), 'writable')
+    cb()
+  }
+
+  readable._read = function(n) {
+    this.push('readable')
+    this.push(null)
+  }
+
+  instance.on('data', function(chunk) {
+    t.equal(chunk.toString(), 'readable')
+  })
+
+  instance.end('writable')
+
+  // separate hooks for redable
+  instance.hookReadable(readable)
+  // and writable
+  instance.hookWritable(writable)
+})
+
 test('shortcut hook', function(t) {
   t.plan(2)
 
