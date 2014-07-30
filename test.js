@@ -44,8 +44,8 @@ test('basically works', function(t) {
   instance.end('writable')
 })
 
-test('echo mode', function(t) {
-  t.plan(1)
+test('end event', function(t) {
+  t.plan(2)
 
   var writable = new stream.PassThrough()
     , instance
@@ -54,6 +54,10 @@ test('echo mode', function(t) {
 
   instance.on('data', function(chunk) {
     t.equal(chunk.toString(), 'a message')
+  })
+
+  instance.on('end', function() {
+    t.ok(true, 'end happened')
   })
 
   instance.end('a message')
@@ -109,14 +113,17 @@ test('pass through error events', function(t) {
 test('late hook', function(t) {
   t.plan(2)
 
-  var writable = new MyWritable(t)
-    , readable = new MyReadable()
+  var writable = new stream.PassThrough()
 
     // nothing here, let's hook them up later
     , instance = duplexer()
 
   instance.on('data', function(chunk) {
-    t.equal(chunk.toString(), 'readable')
+    t.equal(chunk.toString(), 'writable')
+  })
+
+  instance.on('end', function() {
+    t.ok(true, 'end happened')
   })
 
   instance.end('writable')
@@ -124,47 +131,72 @@ test('late hook', function(t) {
   // separate hooks for writable
   instance.hookWritable(writable)
   // and readable
-  instance.hookReadable(readable)
+  instance.hookReadable(writable)
 })
 
 test('late hook reversed', function(t) {
-  t.plan(2)
+  t.plan(1)
 
-  var writable = new MyWritable(t)
-    , readable = new MyReadable()
+  var writable = new stream.PassThrough()
 
     // nothing here, let's hook them up later
     , instance = duplexer()
 
   instance.on('data', function(chunk) {
-    t.equal(chunk.toString(), 'readable')
+    t.equal(chunk.toString(), 'writable')
   })
 
   instance.end('writable')
 
   // separate hooks for redable
-  instance.hookReadable(readable)
+  instance.hookReadable(writable)
   // and writable
   instance.hookWritable(writable)
 })
 
-test('shortcut hook', function(t) {
-  t.plan(2)
+test('late hook multiple writes', function(t) {
+  t.plan(4)
 
-  var writable = new MyWritable(t)
-    , readable = new MyReadable()
+  var writable = new stream.PassThrough()
+
+    // nothing here, let's hook them up later
+    , instance = duplexer()
+    , expected = ['a', 'b', 'c']
+
+  instance.on('data', function(chunk) {
+    t.equal(chunk.toString(), expected.shift())
+  })
+
+  instance.on('end', function() {
+    t.ok(true, 'end happened')
+  })
+
+  instance.write('a')
+  instance.write('b')
+  instance.end('c')
+
+  // separate hooks for writable
+  instance.hookWritable(writable)
+  // and readable
+  instance.hookReadable(writable)
+})
+
+test('shortcut hook', function(t) {
+  t.plan(1)
+
+  var writable = new stream.PassThrough()
 
     // nothing here, let's hook them up later
     , instance = duplexer()
 
   instance.on('data', function(chunk) {
-    t.equal(chunk.toString(), 'readable')
+    t.equal(chunk.toString(), 'writable')
   })
 
   instance.end('writable')
 
   // single hook for both!
-  instance.hook(writable, readable)
+  instance.hook(writable, writable)
 })
 
 test('double hook', function(t) {

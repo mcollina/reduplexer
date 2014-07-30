@@ -77,10 +77,6 @@ ReaDuplexer.prototype.hookWritable = function hookWritable(writable) {
     , this._firstPayload.enc
     , this._firstPayload.cb)
 
-    if (this._writableState.ended) {
-      this._writable.end()
-    }
-
     delete this._firstPayload
   }
 
