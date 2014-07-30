@@ -3,23 +3,37 @@ var test      = require('tap').test
   , stream    = require('readable-stream')
   , duplexer  = require('./')
   , http      = require('http')
+  , util      = require('util')
+
+function MyWritable(t) {
+  stream.Writable.call(this)
+  this._t = t
+}
+
+util.inherits(MyWritable, stream.Writable)
+
+MyWritable.prototype._write = function(chunk, enc, cb) {
+  this._t.equal(chunk.toString(), 'writable')
+  cb()
+}
+
+function MyReadable() {
+  stream.Readable.call(this)
+}
+
+util.inherits(MyReadable, stream.Readable)
+
+MyReadable.prototype._read = function(n) {
+  this.push('readable')
+  this.push(null)
+}
 
 test('basically works', function(t) {
   t.plan(2)
 
-  var writable = new stream.Writable()
-    , readable = new stream.Readable()
+  var writable = new MyWritable(t)
+    , readable = new MyReadable()
     , instance
-
-  writable._write = function(chunk, enc, cb) {
-    t.equal(chunk.toString(), 'writable')
-    cb()
-  }
-
-  readable._read = function(n) {
-    this.push('readable')
-    this.push(null)
-  }
 
   instance = duplexer(writable, readable)
 
@@ -95,21 +109,11 @@ test('pass through error events', function(t) {
 test('late hook', function(t) {
   t.plan(2)
 
-  var writable = new stream.Writable()
-    , readable = new stream.Readable()
+  var writable = new MyWritable(t)
+    , readable = new MyReadable()
 
     // nothing here, let's hook them up later
     , instance = duplexer()
-
-  writable._write = function(chunk, enc, cb) {
-    t.equal(chunk.toString(), 'writable')
-    cb()
-  }
-
-  readable._read = function(n) {
-    this.push('readable')
-    this.push(null)
-  }
 
   instance.on('data', function(chunk) {
     t.equal(chunk.toString(), 'readable')
@@ -123,25 +127,14 @@ test('late hook', function(t) {
   instance.hookReadable(readable)
 })
 
-
 test('late hook reversed', function(t) {
   t.plan(2)
 
-  var writable = new stream.Writable()
-    , readable = new stream.Readable()
+  var writable = new MyWritable(t)
+    , readable = new MyReadable()
 
     // nothing here, let's hook them up later
     , instance = duplexer()
-
-  writable._write = function(chunk, enc, cb) {
-    t.equal(chunk.toString(), 'writable')
-    cb()
-  }
-
-  readable._read = function(n) {
-    this.push('readable')
-    this.push(null)
-  }
 
   instance.on('data', function(chunk) {
     t.equal(chunk.toString(), 'readable')
@@ -158,21 +151,11 @@ test('late hook reversed', function(t) {
 test('shortcut hook', function(t) {
   t.plan(2)
 
-  var writable = new stream.Writable()
-    , readable = new stream.Readable()
+  var writable = new MyWritable(t)
+    , readable = new MyReadable()
 
     // nothing here, let's hook them up later
     , instance = duplexer()
-
-  writable._write = function(chunk, enc, cb) {
-    t.equal(chunk.toString(), 'writable')
-    cb()
-  }
-
-  readable._read = function(n) {
-    this.push('readable')
-    this.push(null)
-  }
 
   instance.on('data', function(chunk) {
     t.equal(chunk.toString(), 'readable')
@@ -187,7 +170,7 @@ test('shortcut hook', function(t) {
 test('double hook', function(t) {
   t.plan(2)
 
-  var writable = new stream.Writable()
+  var writable = new MyWritable(t)
     , readable = new stream.Readable()
 
     // nothing here, let's hook them up later
