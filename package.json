@@ -26,5 +26,13 @@
   },
   "dependencies": {
     "readable-stream": "~1.0.26-2"
-  }
+  },
+  "keywords": [
+    "duplexer",
+    "streams",
+    "streams2",
+    "duplex",
+    "readable",
+    "writable"
+  ]
 }
