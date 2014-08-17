@@ -1,5 +1,5 @@
 
-var test      = require('tap').test
+var test      = require('tape').test
   , stream    = require('readable-stream')
   , duplexer  = require('./')
   , http      = require('http')
