@@ -4,7 +4,8 @@
   "description": "Another Stream2 duplexer",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js | faucet"
+    "test": "node test.js | faucet",
+    "test-browser": "zuul --local 8080 --ui tape -- test.js"
   },
   "pre-commit": [
     "test"
@@ -25,7 +26,9 @@
     "tape": "^2.14.0"
   },
   "dependencies": {
-    "readable-stream": "~1.0.26-2"
+    "inherits": "^2.0.1",
+    "readable-stream": "~1.0.26-2",
+    "zuul": "^1.10.1"
   },
   "keywords": [
     "duplexer",

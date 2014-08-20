@@ -16,9 +16,9 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 'use strict';
 
-var stream = require('readable-stream')
-  , util   = require('util')
-  , assert = require('assert')
+var Duplex    = require('readable-stream').Duplex
+  , Writable  = require('readable-stream').Writable
+  , inherits  = require('inherits')
 
 function ReaDuplexer(writable, readable, options) {
   if (!(this instanceof ReaDuplexer))
@@ -26,7 +26,7 @@ function ReaDuplexer(writable, readable, options) {
 
   this._options   = options
 
-  stream.Duplex.call(this, options)
+  Duplex.call(this, options)
 
   this.hook(writable, readable)
 
@@ -38,7 +38,7 @@ function ReaDuplexer(writable, readable, options) {
   this._lastReadCallback = null
 }
 
-util.inherits(ReaDuplexer, stream.Duplex)
+inherits(ReaDuplexer, Duplex)
 
 function callWrite2Args(chunk, enc, cb) {
   this._writable.write(chunk, enc)
@@ -53,8 +53,12 @@ function callWrite3Args(chunk, enc, cb) {
 ReaDuplexer.prototype.hookWritable = function hookWritable(writable) {
   var that = this
 
-  assert(!this._writable, 'already hooked to a Writable')
-  assert(writable)
+  if (this._writable)
+    throw new Error('already hooked to a Writable')
+
+  if (!writable)
+    throw new Error('missing writable')
+
   this._writable = writable
 
   writable.on('drain', function() {
@@ -85,10 +89,14 @@ ReaDuplexer.prototype.hookWritable = function hookWritable(writable) {
 
 ReaDuplexer.prototype.hookReadable = function hookReadable(readable) {
   var that          = this
-    , dummyWritable = new stream.Writable(this._options)
+    , dummyWritable = new Writable(this._options)
 
-  assert(!this._readable, 'already hooked to a Readable')
-  assert(readable)
+  if (this._readable)
+    throw new Error('already hooked to a Readable')
+
+  if (!readable)
+    throw new Error('missing readable')
+
   this._readable  = readable
 
   dummyWritable._write = function dummyWrite(chunk, enc, cb) {

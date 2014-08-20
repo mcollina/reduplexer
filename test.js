@@ -63,21 +63,6 @@ test('end event', function(t) {
   instance.end('a message')
 })
 
-test('works with a child process', function(t) {
-  t.plan(1)
-
-  var echo     = require('child_process').spawn('cat', [], {
-                   stdio: ['pipe', 'pipe', process.stderr]
-                 })
-    , instance = duplexer(echo.stdin, echo.stdout)
-
-  instance.on('data', function(chunk) {
-    t.equal(chunk.toString(), 'a message')
-  })
-
-  instance.end('a message')
-})
-
 test('objectMode', function(t) {
   t.plan(1)
 
@@ -249,6 +234,13 @@ test('double hook', function(t) {
   t.end()
 })
 
+if (process.browser) {
+  return
+}
+
+// everything after this line will not be executed
+// in the browser
+
 test('HTTP support', function(t) {
   t.plan(1)
 
@@ -320,6 +312,21 @@ test('HTTP support with delayed open', function(t) {
   instance.on('data', function(chunk) {
     t.equal(chunk.toString(), 'a message')
     server.close()
+  })
+
+  instance.end('a message')
+})
+
+test('works with a child process', function(t) {
+  t.plan(1)
+
+  var echo     = require('child_process').spawn('cat', [], {
+                   stdio: ['pipe', 'pipe', process.stderr]
+                 })
+    , instance = duplexer(echo.stdin, echo.stdout)
+
+  instance.on('data', function(chunk) {
+    t.equal(chunk.toString(), 'a message')
   })
 
   instance.end('a message')
