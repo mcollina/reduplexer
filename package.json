@@ -23,12 +23,12 @@
   "devDependencies": {
     "faucet": "0.0.1",
     "pre-commit": "0.0.9",
-    "tape": "^2.14.0"
+    "tape": "^2.14.0",
+    "zuul": "^1.10.1"
   },
   "dependencies": {
     "inherits": "^2.0.1",
-    "readable-stream": "~1.0.26-2",
-    "zuul": "^1.10.1"
+    "readable-stream": "~1.0.26-2"
   },
   "keywords": [
     "duplexer",
