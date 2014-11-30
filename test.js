@@ -63,6 +63,25 @@ test('end event', function(t) {
   instance.end('a message')
 })
 
+test('finish event after end', function(t) {
+  t.plan(2)
+
+  var writable = new stream.PassThrough()
+    , instance
+
+  instance = duplexer(writable, writable)
+
+  instance.on('data', function(chunk) {
+    t.equal(chunk.toString(), 'a message')
+  })
+
+  instance.on('finish', function() {
+    t.ok(true, 'finish happened')
+  })
+
+  instance.end('a message')
+})
+
 test('objectMode', function(t) {
   t.plan(1)
 
