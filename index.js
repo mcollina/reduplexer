@@ -144,7 +144,7 @@ ReaDuplexer.prototype._callWrite = function nop() {
 
 ReaDuplexer.prototype._write = function write(chunk, enc, cb) {
   if (this._writable)
-    this._callWrite(chunk, enc, cb)
+    return this._callWrite(chunk, enc, cb)
 
   // we are in delayed open
   this._firstPayload = {
