@@ -253,6 +253,24 @@ test('double hook', function(t) {
   t.end()
 })
 
+test('supports highWaterMark: 2', function(t) {
+
+  var writable = new stream.Transform({ objectMode: true, highWaterMark: 2 })
+    , instance
+    , unlock = null
+
+  writable._transform = function(obj, enc, cb) {
+    unlock = cb
+  }
+
+  instance = duplexer(writable, writable, { objectMode: true, highWaterMark: 2 })
+
+  t.ok(writable.write('hello'), 'after first we can write')
+  t.notOk(writable.write('hello'), 'after second we cannot write more')
+
+  t.end()
+})
+
 if (process.browser) {
   return
 }
